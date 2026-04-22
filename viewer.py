@@ -31,20 +31,19 @@ DEFAULT_DB = "ngrams.db"
 import os
 def download_db_if_needed(db_path: str):
     if not os.path.exists(db_path):
-        import requests
+        import requests, re
         file_id = "1rakIDm6tD_o-CLrIo2mcSybvR6w4av62"
         print(f"Downloading {db_path} from Google Drive...")
         session = requests.Session()
         url = f"https://drive.google.com/uc?export=download&id={file_id}"
-        response = session.get(url, stream=True)
-        # Handle Google's virus scan warning for large files
-        token = None
-        for key, value in response.cookies.items():
-            if key.startswith("download_warning"):
-                token = value
-        if token:
+        response = session.get(url)
+        match = re.search(r'confirm=([0-9A-Za-z_]+)', response.text)
+        if match:
+            token = match.group(1)
             url = f"https://drive.google.com/uc?export=download&id={file_id}&confirm={token}"
-            response = session.get(url, stream=True)
+        else:
+            url = f"https://drive.google.com/uc?export=download&id={file_id}&confirm=t"
+        response = session.get(url, stream=True)
         with open(db_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=32768):
                 if chunk:
