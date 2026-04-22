@@ -31,19 +31,10 @@ DEFAULT_DB = "ngrams.db"
 import os
 def download_db_if_needed(db_path: str):
     if not os.path.exists(db_path):
-        import requests, re
-        file_id = "1rakIDm6tD_o-CLrIo2mcSybvR6w4av62"
-        print(f"Downloading {db_path} from Google Drive...")
-        session = requests.Session()
-        url = f"https://drive.google.com/uc?export=download&id={file_id}"
-        response = session.get(url)
-        match = re.search(r'confirm=([0-9A-Za-z_]+)', response.text)
-        if match:
-            token = match.group(1)
-            url = f"https://drive.google.com/uc?export=download&id={file_id}&confirm={token}"
-        else:
-            url = f"https://drive.google.com/uc?export=download&id={file_id}&confirm=t"
-        response = session.get(url, stream=True)
+        import requests
+        url = "https://huggingface.co/datasets/segitlitz/ajn-ngrams/resolve/main/ngrams.db"
+        print(f"Downloading {db_path} from Hugging Face...")
+        response = requests.get(url, stream=True)
         with open(db_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=32768):
                 if chunk:
