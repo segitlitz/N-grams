@@ -28,6 +28,17 @@ import streamlit as st
 
 DEFAULT_DB = "ngrams.db"
 
+import os
+def download_db_if_needed(db_path: str):
+    if not os.path.exists(db_path):
+        import urllib.request
+        file_id = "1rakIDm6tD_o-CLrIo2mcSybvR6w4av62"
+        url = f"https://drive.google.com/uc?export=download&id={file_id}"
+        print(f"Downloading {db_path} from Google Drive...")
+        urllib.request.urlretrieve(url, db_path)
+        print("Download complete.")
+
+
 
 @st.cache_resource
 def get_connection(db_path: str) -> sqlite3.Connection:
@@ -99,6 +110,7 @@ def main(db_path: str):
         "1900–1909. Inspired by Google Books Ngram Viewer."
     )
 
+    download_db_if_needed(db_path)
     con = get_connection(db_path)
     min_year, max_year = year_range(con)
 
@@ -170,6 +182,7 @@ def main(db_path: str):
                 combined[term] = s
 
             combined.index.name = "year"
+            combined.index = combined.index.astype(str)
 
             st.subheader("Frequency over time")
             st.line_chart(combined, height=420)
